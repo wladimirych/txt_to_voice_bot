@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.env
+.env.local
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# Dependency packages
+*.egg-info/
+.pytest_cache/
+
+# Project files
+tree_project.ini
+pro_tree.py
+*.log
+logs/
+downloads/
+tmp/
+
+# OS
+.DS_Store
+Thumbs.db

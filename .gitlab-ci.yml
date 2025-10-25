@@ -1,0 +1,51 @@
+stages:
+  - build
+  - deploy
+
+
+build_docker:
+  stage: build
+  image: docker:24.0.6
+  services:
+    - docker:24.0.6-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    REGISTRY_URL: "localhost:7000"
+    CONTAINER_IMAGE: $REGISTRY_URL/tvbot:latest
+    TARGET_REGISTRY_URL: "192.168.49.1:7000"
+    TARGET_IMAGE: $TARGET_REGISTRY_URL/tvbot:latest
+  before_script:
+    # Для локального registry без авторизации закомментируйте строку ниже
+    # - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER $REGISTRY_URL --password-stdin
+  script:
+    - echo "🛠️ Building Docker image"
+    - docker build -t $CONTAINER_IMAGE .
+    - echo "📤 Pushing to $REGISTRY_URL"
+    - docker push $CONTAINER_IMAGE
+    - echo "🔁 Retagging for $TARGET_REGISTRY_URL"
+    - docker tag $CONTAINER_IMAGE $TARGET_IMAGE
+    - echo "📤 Pushing to $TARGET_REGISTRY_URL"
+    - docker push $TARGET_IMAGE
+    - echo "✅ Push completed successfully"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
+
+
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git yq
+  script:
+    - echo "🪄 Updating Helm values.yaml with new image tag"
+    - git clone http://root:glpat-SlN-EMHdyi3IKSlqele9xG86MQp1OjUH.01.0w0yg1w0t@172.17.0.1:7778/root/tvbot.git
+    - cd tvbot/helm
+    - yq e -i ".image.tag = \"latest\"" values.yaml
+    - git config user.name "GitLab CI"
+    - git config user.email "ci@local"
+    - git add values.yaml
+    - git commit -m "Update image tag to latest [skip ci]"
+    - git push http://root:glpat-SlN-EMHdyi3IKSlqele9xG86MQp1OjUH.01.0w0yg1w0t@172.17.0.1:7778/root/tvbot.git HEAD:main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_COMMIT_MESSAGE !~ /\[skip ci\]/
