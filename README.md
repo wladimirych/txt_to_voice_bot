@@ -1,4 +1,4 @@
-# TVBot - Telegram Text-to-Speech Bot
+# TVBot - Telegram Text-to-Voice Bot
 
 🤖 Telegram бот для преобразования текста в голосовое сообщение с использованием gTTS (Google Text-to-Speech).
 
